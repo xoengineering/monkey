@@ -72,6 +72,14 @@ public struct TimestampedName: Hashable, Sendable, Comparable, CustomStringConve
     lhs.description < rhs.description
   }
 
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.description == rhs.description
+  }
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(description)
+  }
+
   private static func randomKey() -> String {
     String((0..<keyLength).map { _ in keyAlphabet.randomElement()! })
   }
