@@ -9,6 +9,7 @@ struct MessageRowView: View {
     VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
       StructuredText(markdown: message.body)
         .textual.structuredTextStyle(.gitHub)
+        .textual.codeBlockStyle(.monkeyCode)
         .textual.textSelection(.enabled)
         .padding(10)
         .background(backgroundColor, in: .rect(cornerRadius: 12))
