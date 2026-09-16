@@ -2,3 +2,6 @@
 .claude/
 .build/
 .swiftpm/
+App/DerivedData/
+App/*.xcodeproj/xcuserdata/
+App/*.xcodeproj/project.xcworkspace/xcuserdata/
