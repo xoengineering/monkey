@@ -48,6 +48,26 @@ import Testing
     #expect(messages[1].status == .complete)
   }
 
+  @Test func callsOnUpdateForEachThrottledWriteAndTerminalStates() async throws {
+    let root = try makeTemporaryRoot()
+    let store = ConversationStore(rootURL: root)
+    let conversation = try await store.create(title: "Chat")
+    let backend = FakeChatBackend(results: [.chunks(["Hi", "Hi there!"])])
+    let session = ModelSession(
+      backend: backend, store: store, conversation: conversation, streamThrottleInterval: 0)
+
+    let updates = LockedArray<Message>()
+    let assistantMessage = try await session.send("Hello") { message in
+      updates.append(message)
+    }
+
+    let recorded = updates.values
+    #expect(recorded.first?.role == .user)
+    #expect(recorded.first?.body == "Hello")
+    #expect(recorded.dropFirst().map(\.status) == [.streaming, .streaming, .streaming, .complete])
+    #expect(recorded.last?.body == assistantMessage.body)
+  }
+
   @Test func replaysStoredHistoryOnNextSend() async throws {
     let root = try makeTemporaryRoot()
     let store = ConversationStore(rootURL: root)

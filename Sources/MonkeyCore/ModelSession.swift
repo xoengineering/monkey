@@ -56,42 +56,34 @@ public actor ModelSession {
     isHistoryLoaded = true
   }
 
+  /// - Parameter onUpdate: called on the store's throttled cadence (and once
+  ///   more for the user message and every terminal state) so a UI observer
+  ///   can mirror progress without polling the store.
   @discardableResult
-  public func send(_ body: String) async throws -> Message {
+  public func send(
+    _ body: String, onUpdate: (@Sendable (Message) -> Void)? = nil
+  ) async throws -> Message {
     guard case .available = backend.availability else {
       throw ModelSessionError.unavailable(backend.availability)
     }
 
     try await loadHistoryIfNeeded()
 
-    let userName = TimestampedName()
-    let userMessage = Message(
-      id: MessageID(rawValue: userName.key),
-      role: .user,
-      createdAt: userName.timestamp,
-      status: .complete,
-      model: backend.identifier,
-      body: body
-    )
+    let userMessage = makeMessage(role: .user, status: .complete, body: body)
     try await store.write(userMessage, in: conversation.id)
+    onUpdate?(userMessage)
 
-    let assistantName = TimestampedName()
-    let assistantMessage = Message(
-      id: MessageID(rawValue: assistantName.key),
-      role: .assistant,
-      createdAt: assistantName.timestamp,
-      status: .streaming,
-      model: backend.identifier,
-      inReplyTo: userMessage.id,
-      body: ""
-    )
+    let assistantMessage = makeMessage(
+      role: .assistant, status: .streaming, body: "", inReplyTo: userMessage.id)
     try await store.write(assistantMessage, in: conversation.id)
+    onUpdate?(assistantMessage)
 
     var replayHistory = history
 
     do {
       let finished = try await stream(
-        assistantMessage, history: &replayHistory, prompt: body, allowTrimRetry: true)
+        assistantMessage, history: &replayHistory, prompt: body, allowTrimRetry: true,
+        onUpdate: onUpdate)
       let userTurn = ChatTurn(role: .user, body: body)
       let assistantTurn = ChatTurn(role: .assistant, body: finished.body)
       history = replayHistory + [userTurn, assistantTurn]
@@ -100,6 +92,7 @@ public actor ModelSession {
       var cancelled = assistantMessage
       cancelled.status = .cancelled
       try await store.write(cancelled, in: conversation.id)
+      onUpdate?(cancelled)
       history = replayHistory + [ChatTurn(role: .user, body: body)]
       throw CancellationError()
     } catch {
@@ -107,16 +100,33 @@ public actor ModelSession {
       failed.status = .failed
       failed.error = String(describing: error)
       try await store.write(failed, in: conversation.id)
+      onUpdate?(failed)
       history = replayHistory + [ChatTurn(role: .user, body: body)]
       throw error
     }
+  }
+
+  private func makeMessage(
+    role: MessageRole, status: MessageStatus, body: String, inReplyTo: MessageID? = nil
+  ) -> Message {
+    let name = TimestampedName()
+    return Message(
+      id: MessageID(rawValue: name.key),
+      role: role,
+      createdAt: name.timestamp,
+      status: status,
+      model: backend.identifier,
+      inReplyTo: inReplyTo,
+      body: body
+    )
   }
 
   private func stream(
     _ initialMessage: Message,
     history: inout [ChatTurn],
     prompt: String,
-    allowTrimRetry: Bool
+    allowTrimRetry: Bool,
+    onUpdate: (@Sendable (Message) -> Void)?
   ) async throws -> Message {
     var message = initialMessage
     message.body = ""
@@ -130,6 +140,7 @@ public actor ModelSession {
         message.body = chunk
         if Date().timeIntervalSince(lastWrite) >= streamThrottleInterval {
           try await store.write(message, in: conversation.id)
+          onUpdate?(message)
           lastWrite = Date()
         }
       }
@@ -137,13 +148,15 @@ public actor ModelSession {
       if case .contextSizeExceeded = error, allowTrimRetry, !history.isEmpty {
         history.removeFirst()
         return try await stream(
-          initialMessage, history: &history, prompt: prompt, allowTrimRetry: false)
+          initialMessage, history: &history, prompt: prompt, allowTrimRetry: false,
+          onUpdate: onUpdate)
       }
       throw error
     }
 
     message.status = .complete
     try await store.write(message, in: conversation.id)
+    onUpdate?(message)
     return message
   }
 }
