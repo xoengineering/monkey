@@ -202,7 +202,7 @@ Non-goals: no daemon, no HTTP server, no `--model` selection, no cross-device an
 
 - `NavigationSplitView`: sidebar = conversation list; detail = message thread. Collapses to stack on iPhone.
 - Sidebar: new conversation, search by title, swipe/context-menu delete, rename.
-- Thread: `LazyVStack` in a `ScrollView`, bottom-anchored. Newest N messages loaded initially (N ≈ 50); scrolling to top triggers `loadMessages` for the previous page. Messages far off-screen can be dropped from the view model's array and re-fetched from the store cache — this is the "unload from UI" half. Keep scroll position stable when prepending (use `scrollPosition` / `defaultScrollAnchor`; **[verify]** best 27-era API for stable prepend).
+- Thread: `LazyVStack` in a `ScrollView`, bottom-anchored. Newest N messages loaded initially (N ≈ 50); scrolling to top triggers `loadMessages` for the previous page. Messages far off-screen can be dropped from the view model's array and re-fetched from the store cache — this is the "unload from UI" half. Keep scroll position stable when prepending. **[verified]** against the macOS 27 SDK: `scrollPosition(id: Binding<(some Hashable)?>, anchor:)` and `defaultScrollAnchor(_:)` both still exist unchanged (they predate 27, and no newer replacement appeared in this SDK) — bind scroll position to the topmost visible message's ID so prepending older messages above it doesn't jump the viewport, and use `defaultScrollAnchor(.bottom)` for the initial bottom-anchored load.
 - Composer: multiline `TextEditor`-style field, ⌘↩ to send on macOS, send button everywhere. Stop button while streaming.
 - Markdown rendering: Textual `StructuredText` with the `.gitHub` style preset, text selection enabled. Verified in Textual: tables, syntax-highlighted code blocks, math, lists, blockquotes. Add a copy button on code blocks via a custom `codeBlockStyle`. Footnotes are not supported by Textual's default parser; accepted for v1. v2 path: plug swift-markdown (or a fork with footnotes enabled) in via Textual's `MarkupParser` protocol. Remote images: render `![alt](url)` as a placeholder showing the URL, tappable to open in the system browser. No image fetching. (Decision deferred — enabling network for images would require the network entitlement process-wide; revisit post-v1.)
 - Empty states: no conversations; model unavailable (with the actual reason and, where applicable, a link to Settings → Apple Intelligence).
@@ -213,7 +213,7 @@ Non-goals: no daemon, no HTTP server, no `--model` selection, no cross-device an
 ### App lifecycle notes (27 SDK)
 
 - **[verified]** against Xcode 27's own SwiftUI multiplatform app template (`INFOPLIST_KEY_UILaunchScreen_Generation = YES` is still set for iOS destinations): a launch screen is still expected. Added an empty `UILaunchScreen` dict to `App/Monkey/Info.plist` (the hand-written-file equivalent of that generated key).
-- **[verify]** `@State` becoming a macro in 27 — check compile warnings.
+- **[verified]** against the macOS 27 SDK: `@State` is still `@frozen @propertyWrapper struct State<Value>` in `SwiftUICore` — it did not become a macro.
 
 ## 7. Phases
 
