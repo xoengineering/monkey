@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Conversation: Hashable, Sendable {
+public struct Conversation: Hashable, Sendable, Identifiable {
   public var id: ConversationID
   public var title: String
   public var createdAt: Date

@@ -85,6 +85,27 @@ import Testing
     #expect(loaded == message)
   }
 
+  @Test func writeRefreshesConversationMessageCountAndUpdatedAt() async throws {
+    let root = try makeTemporaryRoot()
+    let store = ConversationStore(rootURL: root)
+    let original = try await store.create(title: "Chat")
+    let name = TimestampedName()
+    let message = Message(
+      id: MessageID(rawValue: name.key),
+      role: .user,
+      createdAt: name.timestamp,
+      status: .complete,
+      model: "system-on-device",
+      body: "Hello there."
+    )
+
+    try await store.write(message, in: original.id)
+
+    let refreshed = try #require(try await store.listConversations().first)
+    #expect(refreshed.messageCount == 1)
+    #expect(refreshed.updatedAt >= original.updatedAt)
+  }
+
   @Test func messageIndexIsSortedChronologically() async throws {
     let root = try makeTemporaryRoot()
     let store = ConversationStore(rootURL: root)

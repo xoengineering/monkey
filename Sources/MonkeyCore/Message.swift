@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Message: Hashable, Sendable {
+public struct Message: Hashable, Sendable, Identifiable {
   public var id: MessageID
   public var role: MessageRole
   public var createdAt: Date

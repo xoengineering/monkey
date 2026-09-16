@@ -80,6 +80,20 @@ public actor ConversationStore {
     )
     try writeAtomically(message.serialized(), to: messageURL(fileName, in: id))
     messageCache[fileName] = message
+    try touchConversation(id)
+  }
+
+  /// Refreshes `updated_at` and recomputes `message_count` from the directory
+  /// listing (the real source of truth) after a message is written.
+  private func touchConversation(_ id: ConversationID) throws {
+    let yamlURL = directoryURL(for: id).appendingPathComponent("conversation.yaml")
+    guard fileManager.fileExists(atPath: yamlURL.path) else { return }
+
+    var conversation = try YAMLDecoder().decode(
+      Conversation.self, from: try Data(contentsOf: yamlURL))
+    conversation.updatedAt = Date()
+    conversation.messageCount = try messageIndex(for: id).count
+    try writeConversationYAML(conversation)
   }
 
   private func writeConversationYAML(_ conversation: Conversation) throws {
