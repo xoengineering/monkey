@@ -1,6 +1,4 @@
 name: Monkey
-options:
-  bundleIdPrefix: com.example
 packages:
   Monkey:
     path: ..
@@ -17,9 +15,11 @@ targets:
         excludes:
           - Info.plist
           - Monkey.entitlements
+    configFiles:
+      Debug: Local.xcconfig
+      Release: Local.xcconfig
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.Monkey
         PRODUCT_NAME: Monkey
         MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: "1"

@@ -30,20 +30,24 @@ Monkey/
     MonkeyCoreTests/                   # Swift Testing (not XCTest)
     MonkeyUITests/
   App/
+    project.yml                       # xcodegen spec; source of truth for Monkey.xcodeproj
     Monkey.xcodeproj         # single multiplatform app target depending on the package
+    Local.xcconfig.example            # copy to Local.xcconfig (gitignored) to set your bundle ID
     Monkey/
       MonkeyApp.swift
       Info.plist
       Monkey.entitlements
       PrivacyInfo.xcprivacy
       monkey.entitlements               # CLI helper: app-sandbox + app group, no network
+  script/
+    bootstrap                         # copies Local.xcconfig, resolves SPM deps, runs xcodegen
   LICENSE
   README.md
 ```
 
 - One multiplatform app target, not three. `#if os(macOS)` only where unavoidable.
 - Dependencies: Yams (jpsim/Yams) in Core for YAML; Textual (gonzalezreal/textual, ≥0.5.0) in UI for markdown rendering; swift-argument-parser in the CLI target. Pin all to tagged releases. No hand-rolled parsers or renderers.
-- Bundle ID / team / product ID: leave as placeholders; user fills in.
+- Bundle ID / team / product ID: leave as placeholders; user fills in. In practice: `PRODUCT_BUNDLE_IDENTIFIER` comes from `App/Local.xcconfig` (gitignored, created from `Local.xcconfig.example` by `script/bootstrap`). `DEVELOPMENT_TEAM` is deliberately *not* in that xcconfig — XcodeGen mirrors any team set there into the shared, tracked `project.pbxproj`, which would leak a real team ID into version control on the next regeneration. Team selection instead happens per-user in Xcode's Signing & Capabilities tab (stored in gitignored `xcuserdata`), or via a one-off `xcodebuild ... DEVELOPMENT_TEAM=X build` override for command-line builds.
 
 ## 3. On-disk format
 

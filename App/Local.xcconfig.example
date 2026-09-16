@@ -1,0 +1,12 @@
+// Copy this file to Local.xcconfig (gitignored, never committed) and fill in
+// your own bundle identifier. script/bootstrap does this for you
+// automatically if Local.xcconfig doesn't exist yet.
+//
+// Signing team is deliberately not set here: with CODE_SIGN_STYLE Automatic
+// and no team configured, Xcode's Signing & Capabilities tab will prompt you
+// to pick one, and that choice is stored per-user in gitignored xcuserdata —
+// never in the shared, tracked project file. For a one-off command-line
+// build, pass it as a trailing build setting instead:
+// `xcodebuild ... DEVELOPMENT_TEAM=YOURTEAMID build`
+
+PRODUCT_BUNDLE_IDENTIFIER = com.yourdomain.Monkey

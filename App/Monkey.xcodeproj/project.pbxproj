@@ -18,6 +18,7 @@
 		4CCFC7D2FC0E1C344D50A801 /* Monkey */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Monkey; path = ..; sourceTree = SOURCE_ROOT; };
 		66C1DD717C7D651CFB5B18F0 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		881213C8920B1112145F9B8B /* Monkey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Monkey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA651177EA377C9C86147C7A /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,9 +34,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		32545B3752B31336FFEDD17E /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AA651177EA377C9C86147C7A /* Local.xcconfig */,
+			);
+			name = App;
+			path = .;
+			sourceTree = "<group>";
+		};
 		35C4FDF1B20EB1B9A7171998 = {
 			isa = PBXGroup;
 			children = (
+				32545B3752B31336FFEDD17E /* App */,
 				5E064ED444450650EC52331F /* Monkey */,
 				907AEC00E0F6C6FD38FB26A6 /* Packages */,
 				F76C55602C7C83E5DEE7A835 /* Products */,
@@ -214,6 +225,7 @@
 		};
 		9B2B3D33DF65B62A856F4172 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA651177EA377C9C86147C7A /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Monkey/Monkey.entitlements;
@@ -228,7 +240,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.Monkey;
 				PRODUCT_NAME = Monkey;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -297,6 +308,7 @@
 		};
 		C65E2D6B6E087BEEB6C186E3 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA651177EA377C9C86147C7A /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Monkey/Monkey.entitlements;
@@ -311,7 +323,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.Monkey;
 				PRODUCT_NAME = Monkey;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
