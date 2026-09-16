@@ -15,6 +15,7 @@ targets:
         excludes:
           - Info.plist
           - Monkey.entitlements
+          - MonkeyCLI.entitlements
     configFiles:
       Debug: Local.xcconfig
       Release: Local.xcconfig
@@ -34,3 +35,34 @@ targets:
         product: MonkeyCore
       - package: Monkey
         product: MonkeyUI
+      - target: MonkeyCLI
+        embed: true
+        codeSign: true
+        destinationFilters: [macOS]
+        copy:
+          destination: wrapper
+          subpath: Contents/Helpers
+  # Named "MonkeyCLI", not "monkey": Xcode target names become DerivedData
+  # intermediate build folder names, and "monkey.build" vs "Monkey.build"
+  # collide on the default case-insensitive APFS volume, corrupting both
+  # targets' builds (cross-contaminated source file lists). PRODUCT_NAME
+  # below keeps the actual output binary named "monkey" as the CLI spec
+  # requires; only the Xcode target identifier differs.
+  MonkeyCLI:
+    type: tool
+    platform: macOS
+    deploymentTarget:
+      macOS: "27.0"
+    sources:
+      - path: ../Sources/monkey
+    settings:
+      base:
+        PRODUCT_NAME: monkey
+        SWIFT_VERSION: "6"
+        CODE_SIGN_ENTITLEMENTS: Monkey/MonkeyCLI.entitlements
+        CODE_SIGN_STYLE: Automatic
+    dependencies:
+      - package: Monkey
+        product: MonkeyCore
+      - package: Monkey
+        product: ArgumentParser

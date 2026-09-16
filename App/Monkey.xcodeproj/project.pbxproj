@@ -8,20 +8,59 @@
 
 /* Begin PBXBuildFile section */
 		1582477F09B3683844B209C4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 66C1DD717C7D651CFB5B18F0 /* PrivacyInfo.xcprivacy */; };
+		42CF072828EDC47B369E3D86 /* MonkeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = B7B3CBB844B33B5CCEF8E086 /* MonkeyCore */; };
 		56B833AB9BD61483752F3306 /* MonkeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E0B04C4196CEF89AB56C918 /* MonkeyApp.swift */; };
+		A521D1B5D94F8C0144E36B3F /* Monkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A22310CB262123E1E0EA89B5 /* Monkey.swift */; };
+		B684BB0370F5BAF02904548F /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = CC3155CEBB8A38CECD380416 /* ArgumentParser */; };
 		C68DEE6DC47019424BD2C900 /* MonkeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 711ABB5A380AC99CFF671131 /* MonkeyUI */; };
 		D57362BF9856B41F3772BCE9 /* MonkeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3F81D0EE8BDF6ADC0B3EEB6C /* MonkeyCore */; };
+		D65A8B5ACF696C7C4108B44D /* MonkeyCLI in Embed Dependencies */ = {isa = PBXBuildFile; fileRef = 3A5CAAE75D9E1D13B677D47A /* MonkeyCLI */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9A080E57DD4518E21B0366DB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA5CDB5DC1649CA8168B496C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EA8366722552F8A17B53FEC4;
+			remoteInfo = MonkeyCLI;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FB1AFC37A9CE4D77FC8208C3 /* Embed Dependencies */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Helpers;
+			dstSubfolderSpec = 1;
+			files = (
+				D65A8B5ACF696C7C4108B44D /* MonkeyCLI in Embed Dependencies */,
+			);
+			name = "Embed Dependencies";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		2E0B04C4196CEF89AB56C918 /* MonkeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonkeyApp.swift; sourceTree = "<group>"; };
+		3A5CAAE75D9E1D13B677D47A /* MonkeyCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = MonkeyCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CCFC7D2FC0E1C344D50A801 /* Monkey */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Monkey; path = ..; sourceTree = SOURCE_ROOT; };
 		66C1DD717C7D651CFB5B18F0 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		881213C8920B1112145F9B8B /* Monkey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Monkey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A22310CB262123E1E0EA89B5 /* Monkey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monkey.swift; sourceTree = "<group>"; };
 		AA651177EA377C9C86147C7A /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B2169A04581AA3F4EB78F167 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				42CF072828EDC47B369E3D86 /* MonkeyCore in Frameworks */,
+				B684BB0370F5BAF02904548F /* ArgumentParser in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F9B60592CC98858D6C075771 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -48,9 +87,19 @@
 			children = (
 				32545B3752B31336FFEDD17E /* App */,
 				5E064ED444450650EC52331F /* Monkey */,
+				3DEEA5404CD3343220D02CF8 /* monkey */,
 				907AEC00E0F6C6FD38FB26A6 /* Packages */,
 				F76C55602C7C83E5DEE7A835 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		3DEEA5404CD3343220D02CF8 /* monkey */ = {
+			isa = PBXGroup;
+			children = (
+				A22310CB262123E1E0EA89B5 /* Monkey.swift */,
+			);
+			name = monkey;
+			path = ../Sources/monkey;
 			sourceTree = "<group>";
 		};
 		5E064ED444450650EC52331F /* Monkey */ = {
@@ -74,6 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				881213C8920B1112145F9B8B /* Monkey.app */,
+				3A5CAAE75D9E1D13B677D47A /* MonkeyCLI */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -88,10 +138,12 @@
 				8A16A10B41B58C85A70206B3 /* Sources */,
 				920F3623DC880269411CB4C1 /* Resources */,
 				F9B60592CC98858D6C075771 /* Frameworks */,
+				FB1AFC37A9CE4D77FC8208C3 /* Embed Dependencies */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				7C847ACE2251E717ABA56DDA /* PBXTargetDependency */,
 			);
 			name = Monkey;
 			packageProductDependencies = (
@@ -101,6 +153,26 @@
 			productName = Monkey;
 			productReference = 881213C8920B1112145F9B8B /* Monkey.app */;
 			productType = "com.apple.product-type.application";
+		};
+		EA8366722552F8A17B53FEC4 /* MonkeyCLI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 25CD2F3DEBC654485C9AEEBD /* Build configuration list for PBXNativeTarget "MonkeyCLI" */;
+			buildPhases = (
+				89DD8429F338453985F63A40 /* Sources */,
+				B2169A04581AA3F4EB78F167 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MonkeyCLI;
+			packageProductDependencies = (
+				B7B3CBB844B33B5CCEF8E086 /* MonkeyCore */,
+				CC3155CEBB8A38CECD380416 /* ArgumentParser */,
+			);
+			productName = MonkeyCLI;
+			productReference = 3A5CAAE75D9E1D13B677D47A /* MonkeyCLI */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
@@ -112,6 +184,9 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					4F6BAB11E4E54195C87690DE = {
+						ProvisioningStyle = Automatic;
+					};
+					EA8366722552F8A17B53FEC4 = {
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -134,6 +209,7 @@
 			projectRoot = "";
 			targets = (
 				4F6BAB11E4E54195C87690DE /* Monkey */,
+				EA8366722552F8A17B53FEC4 /* MonkeyCLI */,
 			);
 		};
 /* End PBXProject section */
@@ -150,6 +226,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		89DD8429F338453985F63A40 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A521D1B5D94F8C0144E36B3F /* Monkey.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8A16A10B41B58C85A70206B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -160,7 +244,34 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		7C847ACE2251E717ABA56DDA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilters = (
+				macos,
+			);
+			target = EA8366722552F8A17B53FEC4 /* MonkeyCLI */;
+			targetProxy = 9A080E57DD4518E21B0366DB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		5ECE8452654B6A53608A832A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Monkey/MonkeyCLI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_NAME = monkey;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6;
+			};
+			name = Debug;
+		};
 		7708737BABB21F0D24A3E333 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -216,7 +327,6 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -299,7 +409,6 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -334,6 +443,22 @@
 			};
 			name = Release;
 		};
+		D33D81EC397A197B2ED64240 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Monkey/MonkeyCLI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_NAME = monkey;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -342,6 +467,15 @@
 			buildConfigurations = (
 				9B2B3D33DF65B62A856F4172 /* Debug */,
 				C65E2D6B6E087BEEB6C186E3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		25CD2F3DEBC654485C9AEEBD /* Build configuration list for PBXNativeTarget "MonkeyCLI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5ECE8452654B6A53608A832A /* Debug */,
+				D33D81EC397A197B2ED64240 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -372,6 +506,14 @@
 		711ABB5A380AC99CFF671131 /* MonkeyUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MonkeyUI;
+		};
+		B7B3CBB844B33B5CCEF8E086 /* MonkeyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MonkeyCore;
+		};
+		CC3155CEBB8A38CECD380416 /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ArgumentParser;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

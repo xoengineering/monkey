@@ -10,3 +10,10 @@
 // `xcodebuild ... DEVELOPMENT_TEAM=YOURTEAMID build`
 
 PRODUCT_BUNDLE_IDENTIFIER = com.yourdomain.Monkey
+
+// The app group ID below is a literal string baked into Monkey.entitlements
+// and monkey.entitlements (entitlements don't support build-setting
+// substitution the way Info.plist/xcconfig do). If you change
+// PRODUCT_BUNDLE_IDENTIFIER above, update "group.com.yourdomain.Monkey" in
+// both entitlements files to match, and register that App Group ID under
+// your own team in the Apple Developer portal before building.
