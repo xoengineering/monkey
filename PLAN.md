@@ -153,19 +153,20 @@ Files app exposure on iOS (`UIFileSharingEnabled` + `LSSupportsOpeningDocumentsI
 - `loadMessage(_:) -> Message`
 - `loadMessages(_:in range)` — batch
 - `write(_ message:in:)` — atomic
-- `appendStreaming(...)` — the throttled rewrite path
+- No separate `appendStreaming` method: `write` already handles atomic rewrites regardless of status, and there's no disk-I/O difference between a streaming rewrite and any other write. The throttling ("rewrite at ~250ms cadence") is owned by the caller (`ModelSession`), which knows the real token/chunk cadence — adding an identically-behaved alias on the store would be ceremony, not abstraction.
 - Cache: LRU of decoded `Message` values keyed by filename, bounded (e.g. 500 entries or ~N MB of body text). Eviction is the "unload from memory" the spec asks for. Index (filenames) is always resident — it's tiny.
 - Optional: use `NSFilePresenter`/`FileCoordinator`? Probably not needed for single-process. Skip unless testing shows a problem.
 
-### `ModelSession` (actor or `@MainActor` wrapper around `LanguageModelSession`)
+### `ModelSession` (actor, wrapping `LanguageModelSession` via a `ChatBackend` seam)
 
 - Availability: check `SystemLanguageModel.default.availability` at launch and on foreground. Surface every `.unavailable` reason as a real UI state (device unsupported, Apple Intelligence off, model downloading). Do not silently fail.
-- One `LanguageModelSession` per open conversation, built from the conversation's `instructions`. Rebuild when instructions change.
-- Transcript reconstruction: on opening a conversation, rebuild the session transcript from the most recent messages that fit the context window. **[verify]** 26.4+ added context-size inspection and token-counting APIs; use them to pick how many prior messages to replay rather than a hardcoded count. Fall back to a conservative count if unavailable.
-- On `GenerationError.exceededContextWindowSize` (or its 27 equivalent): trim oldest replayed messages, rebuild session, retry once. Surface if it still fails.
-- Streaming: use `streamResponse` and forward partial text to the store's `appendStreaming`. Support cancellation via `Task` cancellation → mark message `cancelled`.
+- **[verified]**: Apple's own `LanguageModel` protocol is not a lightweight testing seam — conforming to it means implementing a full `LanguageModelExecutor` (the request/response streaming internals real backends use). Faking it directly, as originally planned, is impractical. Implemented instead: a small first-party `ChatBackend` protocol (`identifier`, `availability`, `contextSize`, `tokenCount(for:instructions:)`, `streamResponse(history:instructions:prompt:)`) that `ModelSession` depends on. `SystemChatBackend` implements it for real, driving `SystemLanguageModel`/`LanguageModelSession` directly (never referencing `PrivateCloudComputeLanguageModel`). `FakeChatBackend` (test-only) implements it for Core tests, with no Apple Intelligence dependency.
+- One `LanguageModelSession` per open conversation, built from the conversation's `instructions` folded into a rebuilt `Transcript`. Rebuilt on every send in v1 (simpler than caching a long-lived session across instruction changes; revisit if this proves too slow in practice).
+- **[verified]** against the macOS 27 SDK: `SystemLanguageModel.contextSize: Int` and `SystemLanguageModel.tokenCount(for: some Collection<Transcript.Entry>) async throws -> Int` both exist (the "26.4+ context-size and token-counting APIs" this plan anticipated). `ModelSession.loadHistoryIfNeeded()` uses them to trim the oldest replayed messages until the remaining transcript fits `contextSize`, rather than a hardcoded count.
+- **[verified]**: `GenerationError.exceededContextWindowSize` is deprecated as of 27 in favor of `LanguageModelError.contextSizeExceeded(_:)` (with a richer `ContextSizeExceeded { contextSize, tokenCount, debugDescription }` payload). `ModelSession` catches `LanguageModelError.contextSizeExceeded`: trims the oldest replayed message, retries once, surfaces (message `status: failed`) if it still fails.
+- Streaming: `SystemChatBackend.streamResponse` iterates `LanguageModelSession.streamResponse(to:)`'s `ResponseStream<String>` and yields each `Snapshot.content` as the assumed *full text so far* (not a delta) — the `Snapshot` naming and Apple's general partial-generation pattern strongly suggest this, but it's unverified against a real device (Apple Intelligence isn't available in this environment). `ModelSession` throttles writes to the store to every 250ms and always rewrites the message's full body, so this is safe even if the assumption is wrong in the delta case except for what gets displayed mid-stream — confirm on real hardware before shipping. Cancellation via `Task` cancellation → mark message `cancelled`.
 - No tools, no guided generation, no `@Generable` for v1. Plain chat.
-- **[verify]** whether the 27 SDK exposes model tier (Core vs. Core Advanced) and whether you can/should choose. Default: don't choose, take the system default, record whatever identifier is available in `model:`.
+- **[verified]** against the macOS 27 SDK: yes, `SystemLanguageModel.Variant` exists (`.core3`, `.coreAdvanced3`, read via `SystemLanguageModel.default.variant`), confirming there *is* a model tier concept in 27 — but there is no initializer or API to choose one; it's determined by the device. Confirms the plan's default: don't choose, record `SystemLanguageModel.default.variant.displayName` as `model:` (`SystemChatBackend.identifier`).
 
 ## 5. Companion CLI (macOS only, bundled)
 
@@ -218,7 +219,7 @@ Non-goals: no daemon, no HTTP server, no `--model` selection, no cross-device an
 
 1. **Scaffold** — repo, package, app target, entitlements (sandbox on, no network), privacy manifest, CI-less (no network anyway; local `swift test`). Commit.
 2. **Storage** — `FrontmatterDocument`, types, `MessageFileName`, `ConversationStore` with atomic writes and LRU. Full tests. Commit.
-3. **Model** — availability handling, `ModelSession`, streaming into the store, transcript rebuild with context-window sizing, cancellation. Test with a fake `LanguageModel`-like protocol so Core tests don't need Apple Intelligence. Commit.
+3. **Model** — availability handling, `ModelSession`, streaming into the store, transcript rebuild with context-window sizing, cancellation. Test with `FakeChatBackend` (a first-party seam, not a fake of Apple's `LanguageModel`, which isn't fakeable — see §4) so Core tests don't need Apple Intelligence. Done: 49 tests green, including cancellation and context-exceeded trim-and-retry. Commit.
 4. **UI** — split view, list, thread with paging, composer, markdown, empty/unavailable states. Commit.
 5. **CLI** — `monkey` target, entitlements, `ls`/`do`/`chat`/`cat`/`open`/`search`, install flow. Test that a Terminal-launched sandboxed binary reads the group container and reaches the model. Commit.
 6. **iCloud sync (opt-in)** — ubiquity root, migration both directions, file coordination, metadata query, conflict handling for `conversation.yaml`. Test with two devices on one Apple ID and with iCloud signed out. Commit.
