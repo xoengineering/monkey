@@ -207,7 +207,7 @@ Non-goals: no daemon, no HTTP server, no `--model` selection, no cross-device an
 
 ### App lifecycle notes (27 SDK)
 
-- **[verify]** iOS 27 SDK reportedly requires scene-based lifecycle and a launch screen for App Store submission. SwiftUI `App` already uses scenes; confirm launch screen requirement and add `UILaunchScreen` to Info.plist.
+- **[verified]** against Xcode 27's own SwiftUI multiplatform app template (`INFOPLIST_KEY_UILaunchScreen_Generation = YES` is still set for iOS destinations): a launch screen is still expected. Added an empty `UILaunchScreen` dict to `App/Monkey/Info.plist` (the hand-written-file equivalent of that generated key).
 - **[verify]** `@State` becoming a macro in 27 — check compile warnings.
 
 ## 7. Phases
