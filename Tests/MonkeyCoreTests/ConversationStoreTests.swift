@@ -207,6 +207,42 @@ import Testing
     #expect(loaded == message)
   }
 
+  @Test func externalWriteInvalidatesTheCachedMessage() async throws {
+    let root = try makeTemporaryRoot()
+    let store = ConversationStore(rootURL: root)
+    await store.startPresenting()
+    let conversation = try await store.create(title: "Chat")
+    let name = TimestampedName()
+    let original = Message(
+      id: MessageID(rawValue: name.key), role: .user, createdAt: name.timestamp, status: .complete,
+      model: "system-on-device", body: "original")
+    try await store.write(original, in: conversation.id)
+    let fileName = MessageFileName(timestampedName: name)
+    _ = try await store.loadMessage(fileName, in: conversation.id)  // prime the cache
+
+    var updated = original
+    updated.body = "updated externally"
+    let fileURL = root.appendingPathComponent(conversation.id.rawValue)
+      .appendingPathComponent(fileName.description)
+    var coordinatorError: NSError?
+    NSFileCoordinator().coordinate(
+      writingItemAt: fileURL, options: .forReplacing, error: &coordinatorError
+    ) { coordinatedURL in
+      try? updated.serialized().write(to: coordinatedURL, options: .atomic)
+    }
+    #expect(coordinatorError == nil)
+
+    let deadline = Date().addingTimeInterval(2)
+    var reloaded = try await store.loadMessage(fileName, in: conversation.id)
+    while reloaded.body != "updated externally", Date() < deadline {
+      try await Task.sleep(for: .milliseconds(10))
+      reloaded = try await store.loadMessage(fileName, in: conversation.id)
+    }
+
+    #expect(reloaded.body == "updated externally")
+    await store.stopPresenting()
+  }
+
   @Test func cacheEvictsLeastRecentlyUsedMessagesBeyondLimit() async throws {
     let root = try makeTemporaryRoot()
     let store = ConversationStore(rootURL: root, cacheLimit: 1)

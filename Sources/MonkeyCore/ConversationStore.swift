@@ -5,11 +5,36 @@ public actor ConversationStore {
   private let rootURL: URL
   private let fileManager: FileManager
   private var messageCache: LRUCache<MessageFileName, Message>
+  private var filePresenter: ConversationsRootFilePresenter?
 
   public init(rootURL: URL, fileManager: FileManager = .default, cacheLimit: Int = 500) {
     self.rootURL = rootURL
     self.fileManager = fileManager
     self.messageCache = LRUCache(capacity: cacheLimit)
+  }
+
+  /// Registers an `NSFilePresenter` for the root so external writers (the
+  /// iCloud daemon syncing another device's changes, or the user editing a
+  /// file directly in Finder/Files) evict the affected message from the
+  /// cache instead of serving stale content (PLAN.md §3a).
+  public func startPresenting() {
+    guard filePresenter == nil else { return }
+    let presenter = ConversationsRootFilePresenter(rootURL: rootURL) { [weak self] url in
+      Task { await self?.invalidateCache(for: url) }
+    }
+    filePresenter = presenter
+    NSFileCoordinator.addFilePresenter(presenter)
+  }
+
+  public func stopPresenting() {
+    guard let presenter = filePresenter else { return }
+    NSFileCoordinator.removeFilePresenter(presenter)
+    filePresenter = nil
+  }
+
+  private func invalidateCache(for url: URL) {
+    guard let fileName = MessageFileName(parsing: url.lastPathComponent) else { return }
+    messageCache[fileName] = nil
   }
 
   public func listConversations() throws -> [Conversation] {
@@ -23,7 +48,7 @@ public actor ConversationStore {
     let conversations = try entries.compactMap { url -> Conversation? in
       let yamlURL = url.appendingPathComponent("conversation.yaml")
       guard fileManager.fileExists(atPath: yamlURL.path) else { return nil }
-      let data = try Data(contentsOf: yamlURL)
+      let data = try coordinatedRead(at: yamlURL)
       return try YAMLDecoder().decode(Conversation.self, from: data)
     }
 
@@ -48,7 +73,7 @@ public actor ConversationStore {
   }
 
   public func delete(_ id: ConversationID) throws {
-    try fileManager.removeItem(at: directoryURL(for: id))
+    try coordinatedRemove(at: directoryURL(for: id))
     messageCache.removeAll()
   }
 
@@ -62,7 +87,7 @@ public actor ConversationStore {
     if let cached = messageCache[fileName] {
       return cached
     }
-    let data = try Data(contentsOf: messageURL(fileName, in: id))
+    let data = try coordinatedRead(at: messageURL(fileName, in: id))
     let message = try Message.load(from: data)
     messageCache[fileName] = message
     return message
@@ -78,7 +103,7 @@ public actor ConversationStore {
     let fileName = MessageFileName(
       timestampedName: TimestampedName(timestamp: message.createdAt, key: message.id.rawValue)
     )
-    try writeAtomically(message.serialized(), to: messageURL(fileName, in: id))
+    try coordinatedWrite(message.serialized(), to: messageURL(fileName, in: id))
     messageCache[fileName] = message
     try touchConversation(id)
   }
@@ -90,7 +115,7 @@ public actor ConversationStore {
     guard fileManager.fileExists(atPath: yamlURL.path) else { return }
 
     var conversation = try YAMLDecoder().decode(
-      Conversation.self, from: try Data(contentsOf: yamlURL))
+      Conversation.self, from: try coordinatedRead(at: yamlURL))
     conversation.updatedAt = Date()
     conversation.messageCount = try messageIndex(for: id).count
     try writeConversationYAML(conversation)
@@ -100,15 +125,49 @@ public actor ConversationStore {
     guard let data = try YAMLEncoder().encode(conversation).data(using: .utf8) else {
       throw FrontmatterDocument.FrontmatterError.invalidEncoding
     }
-    try writeAtomically(
+    try coordinatedWrite(
       data, to: directoryURL(for: conversation.id).appendingPathComponent("conversation.yaml")
     )
   }
 
-  private func writeAtomically(_ data: Data, to url: URL) throws {
-    let tempURL = url.appendingPathExtension("tmp-\(UUID().uuidString)")
-    try data.write(to: tempURL, options: .atomic)
-    _ = try fileManager.replaceItemAt(url, withItemAt: tempURL)
+  private func coordinatedRead(at url: URL) throws -> Data {
+    var coordinatorError: NSError?
+    var result: Result<Data, Error>!
+    NSFileCoordinator(filePresenter: filePresenter).coordinate(
+      readingItemAt: url, options: [], error: &coordinatorError
+    ) { coordinatedURL in
+      result = Result { try Data(contentsOf: coordinatedURL) }
+    }
+    if let coordinatorError { throw coordinatorError }
+    return try result.get()
+  }
+
+  private func coordinatedWrite(_ data: Data, to url: URL) throws {
+    var coordinatorError: NSError?
+    var writeResult: Result<Void, Error> = .success(())
+    NSFileCoordinator(filePresenter: filePresenter).coordinate(
+      writingItemAt: url, options: .forReplacing, error: &coordinatorError
+    ) { coordinatedURL in
+      writeResult = Result {
+        let tempURL = coordinatedURL.appendingPathExtension("tmp-\(UUID().uuidString)")
+        try data.write(to: tempURL, options: .atomic)
+        _ = try fileManager.replaceItemAt(coordinatedURL, withItemAt: tempURL)
+      }
+    }
+    if let coordinatorError { throw coordinatorError }
+    try writeResult.get()
+  }
+
+  private func coordinatedRemove(at url: URL) throws {
+    var coordinatorError: NSError?
+    var removeResult: Result<Void, Error> = .success(())
+    NSFileCoordinator(filePresenter: filePresenter).coordinate(
+      writingItemAt: url, options: .forDeleting, error: &coordinatorError
+    ) { coordinatedURL in
+      removeResult = Result { try fileManager.removeItem(at: coordinatedURL) }
+    }
+    if let coordinatorError { throw coordinatorError }
+    try removeResult.get()
   }
 
   private func directoryURL(for id: ConversationID) -> URL {
