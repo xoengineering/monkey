@@ -3,13 +3,19 @@ import SwiftUI
 import Textual
 
 public struct MonkeyRootView: View {
-  @State private var environment: AppEnvironment
+  var environment: AppEnvironment
+  @Binding var defaultInstructions: String
   @State private var selection: ConversationID?
-  @State private var showingSettings = false
-  @State private var defaultInstructions = ""
+  #if os(iOS)
+    @State private var showingSettings = false
+  #endif
+  #if os(macOS)
+    @Environment(\.openSettings) private var openSettings
+  #endif
 
-  public init(store: ConversationStore, backend: any ChatBackend) {
-    _environment = State(initialValue: AppEnvironment(store: store, backend: backend))
+  public init(environment: AppEnvironment, defaultInstructions: Binding<String>) {
+    self.environment = environment
+    self._defaultInstructions = defaultInstructions
   }
 
   public var body: some View {
@@ -19,7 +25,11 @@ public struct MonkeyRootView: View {
         .toolbar {
           ToolbarItem(placement: .automatic) {
             Button("Settings", systemImage: "gearshape") {
-              showingSettings = true
+              #if os(macOS)
+                openSettings()
+              #else
+                showingSettings = true
+              #endif
             }
           }
         }
@@ -41,8 +51,10 @@ public struct MonkeyRootView: View {
     }
     .textual.imageAttachmentLoader(NoFetchImageAttachmentLoader())
     .onChange(of: environment.generation) { selection = nil }
-    .sheet(isPresented: $showingSettings) {
-      SettingsView(defaultInstructions: $defaultInstructions, environment: environment)
-    }
+    #if os(iOS)
+      .sheet(isPresented: $showingSettings) {
+        SettingsTabsView(defaultInstructions: $defaultInstructions, environment: environment)
+      }
+    #endif
   }
 }
