@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 
 if [ ! -f App/Local.xcconfig ]; then
   cp App/Local.xcconfig.example App/Local.xcconfig
-  echo "Created App/Local.xcconfig — edit it with your own DEVELOPMENT_TEAM and PRODUCT_BUNDLE_IDENTIFIER before building the app target."
+  echo "Created App/Local.xcconfig — edit it with your own PRODUCT_BUNDLE_IDENTIFIER before building the app target."
 fi
 
 swift package resolve

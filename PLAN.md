@@ -38,9 +38,14 @@ Monkey/
       Info.plist
       Monkey.entitlements
       PrivacyInfo.xcprivacy
-      monkey.entitlements               # CLI helper: app-sandbox + app group, no network
+      MonkeyCLI.entitlements            # CLI helper: app-sandbox + app group, no network
   script/
     bootstrap                         # copies Local.xcconfig, resolves SPM deps, runs xcodegen
+    format                             # swift format --in-place --recursive
+    lint                               # swift format lint + swiftlint
+    build                              # swift build
+    test                               # swift test
+    run                                # bootstrap, xcodebuild the macOS app, open it
   LICENSE
   README.md
 ```

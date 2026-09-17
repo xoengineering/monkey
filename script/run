@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+cd "$(dirname "$0")/.."
+
+./script/bootstrap
+
+cd App
+
+TEAM_SETTING=""
+if [ -n "$DEVELOPMENT_TEAM" ]; then
+  TEAM_SETTING="DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM"
+fi
+
+# shellcheck disable=SC2086
+xcodebuild -project Monkey.xcodeproj -scheme Monkey -destination 'platform=macOS' \
+  -derivedDataPath ./DerivedData -allowProvisioningUpdates $TEAM_SETTING build
+
+open ./DerivedData/Build/Products/Debug/Monkey.app
