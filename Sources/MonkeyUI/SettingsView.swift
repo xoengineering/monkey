@@ -8,6 +8,9 @@ import SwiftUI
 struct SettingsView: View {
   @Binding var defaultInstructions: String
   var environment: AppEnvironment
+  #if os(macOS)
+    @State private var installedCLIPath: String?
+  #endif
 
   var body: some View {
     Form {
@@ -51,6 +54,21 @@ struct SettingsView: View {
         #endif
       }
 
+      #if os(macOS)
+        Section("Command Line Tool") {
+          Button("Install Command Line Tool…", action: installCommandLineTool)
+          if let installedCLIPath {
+            Text("Installed at \(installedCLIPath). Run `monkey` from Terminal.")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          } else {
+            Text("Installs a symlink to the bundled CLI so you can run `monkey` from Terminal.")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+        }
+      #endif
+
       Section("About") {
         LabeledContent("License", value: "MIT")
       }
@@ -68,6 +86,18 @@ struct SettingsView: View {
       Text(environment.errorMessage ?? "")
     }
   }
+
+  #if os(macOS)
+    private func installCommandLineTool() {
+      do {
+        if let path = try CLIInstaller.install() {
+          installedCLIPath = path
+        }
+      } catch {
+        environment.errorMessage = String(describing: error)
+      }
+    }
+  #endif
 
   private var storageLocationBinding: Binding<StorageLocation> {
     Binding(
