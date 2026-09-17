@@ -2,12 +2,16 @@
 // your own bundle identifier. script/bootstrap does this for you
 // automatically if Local.xcconfig doesn't exist yet.
 //
-// Signing team is deliberately not set here: with CODE_SIGN_STYLE Automatic
-// and no team configured, Xcode's Signing & Capabilities tab will prompt you
-// to pick one, and that choice is stored per-user in gitignored xcuserdata —
-// never in the shared, tracked project file. For a one-off command-line
-// build, pass it as a trailing build setting instead:
-// `xcodebuild ... DEVELOPMENT_TEAM=YOURTEAMID build`
+// Signing team does NOT belong here. XcodeGen reads whatever DEVELOPMENT_TEAM
+// it can resolve at `generate` time — including one set via configFiles like
+// this — and writes it into TargetAttributes in the shared, tracked
+// project.pbxproj (confirmed: `xcodegen generate` with DEVELOPMENT_TEAM set
+// in this file added `DevelopmentTeam = <id>;` to both targets in
+// project.pbxproj). Since script/bootstrap runs `xcodegen generate` on every
+// build, that would leak a real team ID into version control on every
+// regeneration. Team ID instead lives in the repo-root `.env` (gitignored,
+// see .env.example) and is passed to xcodebuild only as a trailing
+// command-line override by script/run — never through project.yml/xcconfig.
 
 PRODUCT_BUNDLE_IDENTIFIER = com.yourdomain.Monkey
 

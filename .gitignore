@@ -6,3 +6,4 @@ App/DerivedData/
 App/*.xcodeproj/xcuserdata/
 App/*.xcodeproj/project.xcworkspace/xcuserdata/
 App/Local.xcconfig
+.env

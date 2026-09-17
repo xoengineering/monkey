@@ -5,6 +5,11 @@ cd "$(dirname "$0")/.."
 
 ./script/bootstrap
 
+if [ -f .env ]; then
+  # shellcheck disable=SC1091
+  . ./.env
+fi
+
 cd App
 
 TEAM_SETTING=""

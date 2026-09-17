@@ -39,8 +39,9 @@ Monkey/
       Monkey.entitlements
       PrivacyInfo.xcprivacy
       MonkeyCLI.entitlements            # CLI helper: app-sandbox + app group, no network
+  .env.example                         # copy to .env (gitignored) to set DEVELOPMENT_TEAM for script/run
   script/
-    bootstrap                          # copies Local.xcconfig, resolves SPM deps, runs xcodegen
+    bootstrap                          # copies Local.xcconfig + .env, resolves SPM deps, runs xcodegen
     format                             # swift format --in-place --recursive
     lint                               # swift format lint + swiftlint
     build                              # swift build
@@ -52,7 +53,7 @@ Monkey/
 
 - One multiplatform app target, not three. `#if os(macOS)` only where unavoidable.
 - Dependencies: Yams (jpsim/Yams) in Core for YAML; Textual (gonzalezreal/textual, ≥0.5.0) in UI for markdown rendering; swift-argument-parser in the CLI target. Pin all to tagged releases. No hand-rolled parsers or renderers.
-- Bundle ID / team / product ID: leave as placeholders; user fills in. In practice: `PRODUCT_BUNDLE_IDENTIFIER` comes from `App/Local.xcconfig` (gitignored, created from `Local.xcconfig.example` by `script/bootstrap`). `DEVELOPMENT_TEAM` is deliberately _not_ in that xcconfig — XcodeGen mirrors any team set there into the shared, tracked `project.pbxproj`, which would leak a real team ID into version control on the next regeneration. Team selection instead happens per-user in Xcode's Signing & Capabilities tab (stored in gitignored `xcuserdata`), or via a one-off `xcodebuild ... DEVELOPMENT_TEAM=X build` override for command-line builds.
+- Bundle ID / team / product ID: leave as placeholders; user fills in. In practice: `PRODUCT_BUNDLE_IDENTIFIER` comes from `App/Local.xcconfig` (gitignored, created from `Local.xcconfig.example` by `script/bootstrap`). `DEVELOPMENT_TEAM` is deliberately _not_ in that xcconfig, and not in `project.yml` `settings:` either — **[verified]** by direct test: putting `DEVELOPMENT_TEAM` in a `configFiles:`-referenced xcconfig and running `xcodegen generate` wrote `DevelopmentTeam = <id>;` into `TargetAttributes` in the shared, tracked `project.pbxproj`, regardless of the xcconfig file itself being gitignored — XcodeGen resolves the value at generate time and bakes it into the tracked file, and `script/bootstrap` runs `xcodegen generate` on every build, so this would leak a real team ID on every regeneration. Team ID instead lives in a repo-root `.env` (gitignored, created from tracked `.env.example` by `script/bootstrap`) that `script/run` sources as a plain shell script and passes to `xcodebuild` only as a trailing command-line override — this never touches `project.yml`/xcconfig/xcodegen, so it can't leak into `project.pbxproj`. Verified: `codesign -dv` on the built app shows `TeamIdentifier=<id>` matching `.env`, and `git status` shows zero tracked-file changes after the build. Xcode's own Signing & Capabilities tab (stored in gitignored `xcuserdata`) also still works as a per-user alternative.
 
 ## 3. On-disk format
 

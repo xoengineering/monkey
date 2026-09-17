@@ -8,6 +8,11 @@ if [ ! -f App/Local.xcconfig ]; then
   echo "Created App/Local.xcconfig — edit it with your own PRODUCT_BUNDLE_IDENTIFIER before building the app target."
 fi
 
+if [ ! -f .env ]; then
+  cp .env.example .env
+  echo "Created .env — edit it with your own DEVELOPMENT_TEAM before running script/run."
+fi
+
 swift package resolve
 
 cd App && xcodegen generate
