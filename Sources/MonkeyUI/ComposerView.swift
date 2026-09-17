@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ComposerView: View {
   var viewModel: ConversationDetailViewModel
+  var isSendingDisabled = false
   @FocusState private var isFocused: Bool
 
   var body: some View {
@@ -37,6 +38,7 @@ struct ComposerView: View {
       }
     }
     .padding(8)
+    .disabled(isSendingDisabled)
   }
 
   private func send() {

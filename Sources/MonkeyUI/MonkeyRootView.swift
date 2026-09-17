@@ -30,6 +30,7 @@ public struct MonkeyRootView: View {
       if let conversation = selectedConversation {
         ConversationDetailView(
           conversation: conversation, store: environment.store, backend: environment.backend,
+          isSendingDisabled: environment.isMigrating,
           onConversationUpdated: { Task { await environment.listViewModel.refresh() } }
         )
         .id(conversation.id)

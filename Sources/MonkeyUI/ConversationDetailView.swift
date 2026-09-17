@@ -4,15 +4,18 @@ import SwiftUI
 
 struct ConversationDetailView: View {
   @State private var viewModel: ConversationDetailViewModel
+  var isSendingDisabled = false
 
   init(
     conversation: Conversation, store: ConversationStore, backend: any ChatBackend,
+    isSendingDisabled: Bool = false,
     onConversationUpdated: (() -> Void)? = nil
   ) {
     _viewModel = State(
       initialValue: ConversationDetailViewModel(
         conversation: conversation, store: store, backend: backend,
         onConversationUpdated: onConversationUpdated))
+    self.isSendingDisabled = isSendingDisabled
   }
 
   var body: some View {
@@ -23,7 +26,7 @@ struct ConversationDetailView: View {
         VStack(spacing: 0) {
           MessageThreadView(viewModel: viewModel)
           Divider()
-          ComposerView(viewModel: viewModel)
+          ComposerView(viewModel: viewModel, isSendingDisabled: isSendingDisabled)
         }
       }
     }
