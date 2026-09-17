@@ -46,5 +46,9 @@ let package = Package(
       name: "MonkeyUITests",
       dependencies: ["MonkeyUI"]
     ),
+    .testTarget(
+      name: "MonkeyCLITests",
+      dependencies: ["monkey"]
+    ),
   ]
 )

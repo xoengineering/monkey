@@ -3,5 +3,5 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-swift format lint --recursive Sources Tests App Package.swift
+swift format lint --recursive Sources Tests App/Monkey Package.swift
 swiftlint lint Sources Tests

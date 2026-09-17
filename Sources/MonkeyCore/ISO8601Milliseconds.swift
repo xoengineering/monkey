@@ -6,14 +6,14 @@ import Foundation
 /// `Date.ISO8601FormatStyle` truncates rather than rounds fractional seconds in
 /// some cases (e.g. `.124` round-trips to `.123`), so formatting is done manually
 /// via `Calendar` components, rounding milliseconds to the nearest whole value.
-enum ISO8601Milliseconds {
+public enum ISO8601Milliseconds {
   private static let utcCalendar: Calendar = {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(identifier: "UTC")!
     return calendar
   }()
 
-  static func string(from date: Date) -> String {
+  public static func string(from date: Date) -> String {
     let components = utcCalendar.dateComponents(
       [.year, .month, .day, .hour, .minute, .second, .nanosecond], from: date)
     let milliseconds = Int((Double(components.nanosecond ?? 0) / 1_000_000).rounded())
@@ -23,7 +23,7 @@ enum ISO8601Milliseconds {
       components.hour ?? 0, components.minute ?? 0, components.second ?? 0, milliseconds)
   }
 
-  static func date(from string: String) -> Date? {
+  public static func date(from string: String) -> Date? {
     guard string.count == 24 else { return nil }
 
     let characters = Array(string)

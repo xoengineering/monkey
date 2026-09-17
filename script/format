@@ -3,4 +3,4 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-swift format --in-place --recursive Sources Tests App Package.swift
+swift format --in-place --recursive Sources Tests App/Monkey Package.swift

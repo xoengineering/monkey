@@ -1,0 +1,6 @@
+# swift format's canonical style always appends a trailing comma to
+# multi-line collection literals; swiftlint's default trailing_comma rule
+# disallows exactly that. Deferring to swift format rather than fighting it
+# every time a multi-line array/dictionary literal shows up.
+disabled_rules:
+  - trailing_comma
