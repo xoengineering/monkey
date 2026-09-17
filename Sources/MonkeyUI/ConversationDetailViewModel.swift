@@ -19,6 +19,7 @@ public final class ConversationDetailViewModel {
   private let store: ConversationStore
   private let modelSession: ModelSession
   private let pageSize: Int
+  private let onConversationUpdated: (() -> Void)?
   private var fullIndex: [MessageFileName] = []
   private var oldestLoadedIndex = 0
   private var sendTask: Task<Void, Never>?
@@ -27,13 +28,15 @@ public final class ConversationDetailViewModel {
     conversation: Conversation,
     store: ConversationStore,
     backend: any ChatBackend,
-    pageSize: Int = 50
+    pageSize: Int = 50,
+    onConversationUpdated: (() -> Void)? = nil
   ) {
     self.conversation = conversation
     self.store = store
     self.modelSession = ModelSession(
       backend: backend, store: store, conversation: conversation)
     self.pageSize = pageSize
+    self.onConversationUpdated = onConversationUpdated
   }
 
   public func load() async {
@@ -124,5 +127,6 @@ public final class ConversationDetailViewModel {
     } catch {
       errorMessage = String(describing: error)
     }
+    onConversationUpdated?()
   }
 }

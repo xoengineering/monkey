@@ -5,10 +5,14 @@ import SwiftUI
 struct ConversationDetailView: View {
   @State private var viewModel: ConversationDetailViewModel
 
-  init(conversation: Conversation, store: ConversationStore, backend: any ChatBackend) {
+  init(
+    conversation: Conversation, store: ConversationStore, backend: any ChatBackend,
+    onConversationUpdated: (() -> Void)? = nil
+  ) {
     _viewModel = State(
       initialValue: ConversationDetailViewModel(
-        conversation: conversation, store: store, backend: backend))
+        conversation: conversation, store: store, backend: backend,
+        onConversationUpdated: onConversationUpdated))
   }
 
   var body: some View {

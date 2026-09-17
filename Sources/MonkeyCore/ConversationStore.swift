@@ -2,7 +2,7 @@ import Foundation
 import Yams
 
 public actor ConversationStore {
-  private let rootURL: URL
+  public nonisolated let rootURL: URL
   private let fileManager: FileManager
   private var messageCache: LRUCache<MessageFileName, Message>
   private var filePresenter: ConversationsRootFilePresenter?
