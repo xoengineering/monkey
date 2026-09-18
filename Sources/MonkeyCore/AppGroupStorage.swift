@@ -5,7 +5,7 @@ import Foundation
 /// Application Support when the app group container isn't available — e.g. an
 /// unsigned `swift build`/`swift test` product with no entitlements at all.
 public enum AppGroupStorage {
-  public static let groupIdentifier = "group.com.example.Monkey"
+  public static let groupIdentifier = "group.engineering.xo.Monkey"
 
   public static func conversationsRootURL(fileManager: FileManager = .default) -> URL {
     let base =

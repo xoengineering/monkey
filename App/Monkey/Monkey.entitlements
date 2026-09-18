@@ -6,7 +6,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.example.Monkey</string>
+		<string>group.engineering.xo.Monkey</string>
 	</array>
 	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
