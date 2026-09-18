@@ -15,9 +15,13 @@
 
 PRODUCT_BUNDLE_IDENTIFIER = com.example.Monkey
 
-// The app group ID below is a literal string baked into Monkey.entitlements
-// and MonkeyCLI.entitlements (entitlements don't support build-setting
-// substitution the way Info.plist/xcconfig do). If you change
-// PRODUCT_BUNDLE_IDENTIFIER above, update "group.com.example.Monkey" in
-// both entitlements files to match, and register that App Group ID under
-// your own team in the Apple Developer portal before building.
+// The app group ID is a literal string in three places: Monkey.entitlements,
+// MonkeyCLI.entitlements, and Sources/MonkeyCore/AppGroupStorage.swift (the
+// Swift constant is runtime code and can't see build settings, so the
+// entitlements just match it). If you change PRODUCT_BUNDLE_IDENTIFIER above,
+// update all three to match, then register the App Group once in Xcode's
+// Signing & Capabilities tab for BOTH the iOS and macOS rows. If the app
+// then still gets "Operation not permitted" writing to its container, delete
+// the cached wildcard "Mac Team Provisioning Profile: *" from
+// ~/Library/Developer/Xcode/UserData/Provisioning Profiles/ and rebuild —
+// see PLAN.md §3a for why.
