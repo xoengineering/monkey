@@ -24,22 +24,6 @@ import Testing
     #expect(conversation.messageCount == 0)
   }
 
-  @Test func listsConversationsSortedByUpdatedAtDescending() async throws {
-    let root = try makeTemporaryRoot()
-    let store = ConversationStore(rootURL: root)
-
-    var first = try await store.create(title: "First")
-    var second = try await store.create(title: "Second")
-    first.updatedAt = Date(timeIntervalSinceNow: -10)
-    second.updatedAt = Date()
-    try await store.update(first)
-    try await store.update(second)
-
-    let listed = try await store.listConversations()
-
-    #expect(listed.map(\.title) == ["Second", "First"])
-  }
-
   @Test func updateRewritesConversationYAML() async throws {
     let root = try makeTemporaryRoot()
     let store = ConversationStore(rootURL: root)
@@ -104,6 +88,10 @@ import Testing
     let refreshed = try #require(try await store.listConversations().first)
     #expect(refreshed.messageCount == 1)
     #expect(refreshed.updatedAt >= original.updatedAt)
+    let lastMessageAt = try #require(refreshed.lastMessageAt)
+    #expect(
+      ISO8601Milliseconds.string(from: lastMessageAt)
+        == ISO8601Milliseconds.string(from: message.createdAt))
   }
 
   @Test func messageIndexIsSortedChronologically() async throws {

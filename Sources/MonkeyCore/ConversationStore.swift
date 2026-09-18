@@ -49,10 +49,18 @@ public actor ConversationStore {
       let yamlURL = url.appendingPathComponent("conversation.yaml")
       guard fileManager.fileExists(atPath: yamlURL.path) else { return nil }
       let data = try coordinatedRead(at: yamlURL)
-      return try YAMLDecoder().decode(Conversation.self, from: data)
+      var conversation = try YAMLDecoder().decode(Conversation.self, from: data)
+      // Files written before `last_message_at` existed: the newest message
+      // file name carries the same timestamp, so read it from there. The next
+      // message write persists it.
+      if conversation.lastMessageAt == nil {
+        let newestMessage = try messageIndex(for: conversation.id).last
+        conversation.lastMessageAt = newestMessage?.timestampedName.timestamp
+      }
+      return conversation
     }
 
-    return conversations.sorted { $0.updatedAt > $1.updatedAt }
+    return conversations.sorted { $0.lastActivityAt > $1.lastActivityAt }
   }
 
   @discardableResult
@@ -105,18 +113,21 @@ public actor ConversationStore {
     )
     try coordinatedWrite(message.serialized(), to: messageURL(fileName, in: id))
     messageCache[fileName] = message
-    try touchConversation(id)
+    try touchConversation(id, messageWrittenAt: message.createdAt)
   }
 
-  /// Refreshes `updated_at` and recomputes `message_count` from the directory
-  /// listing (the real source of truth) after a message is written.
-  private func touchConversation(_ id: ConversationID) throws {
+  /// Refreshes `updated_at`/`last_message_at` and recomputes `message_count`
+  /// from the directory listing (the real source of truth) after a message is
+  /// written. A streaming reply is rewritten many times, so `last_message_at`
+  /// only ever moves forward.
+  private func touchConversation(_ id: ConversationID, messageWrittenAt: Date) throws {
     let yamlURL = directoryURL(for: id).appendingPathComponent("conversation.yaml")
     guard fileManager.fileExists(atPath: yamlURL.path) else { return }
 
     var conversation = try YAMLDecoder().decode(
       Conversation.self, from: try coordinatedRead(at: yamlURL))
     conversation.updatedAt = Date()
+    conversation.lastMessageAt = max(conversation.lastMessageAt ?? .distantPast, messageWrittenAt)
     conversation.messageCount = try messageIndex(for: id).count
     try writeConversationYAML(conversation)
   }

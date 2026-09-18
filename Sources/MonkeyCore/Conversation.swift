@@ -5,6 +5,10 @@ public struct Conversation: Hashable, Sendable, Identifiable {
   public var title: String
   public var createdAt: Date
   public var updatedAt: Date
+  /// When the newest message was written; `nil` until the first one. Drives
+  /// list order, unlike `updatedAt`, which any metadata write (rename,
+  /// instructions) bumps.
+  public var lastMessageAt: Date?
   public var instructions: String
   public var messageCount: Int
 
@@ -13,6 +17,7 @@ public struct Conversation: Hashable, Sendable, Identifiable {
     title: String,
     createdAt: Date,
     updatedAt: Date,
+    lastMessageAt: Date? = nil,
     instructions: String = "",
     messageCount: Int = 0
   ) {
@@ -20,9 +25,14 @@ public struct Conversation: Hashable, Sendable, Identifiable {
     self.title = title
     self.createdAt = createdAt
     self.updatedAt = updatedAt
+    self.lastMessageAt = lastMessageAt
     self.instructions = instructions
     self.messageCount = messageCount
   }
+
+  /// Sort key for "latest first": the newest message, or creation for an
+  /// empty conversation.
+  public var lastActivityAt: Date { lastMessageAt ?? createdAt }
 }
 
 extension Conversation: Codable {
@@ -30,6 +40,7 @@ extension Conversation: Codable {
     case id, title, instructions
     case createdAt = "created_at"
     case updatedAt = "updated_at"
+    case lastMessageAt = "last_message_at"
     case messageCount = "message_count"
   }
 
@@ -54,6 +65,16 @@ extension Conversation: Codable {
         forKey: .updatedAt, in: container, debugDescription: "Invalid ISO-8601 timestamp")
     }
     self.updatedAt = updatedAt
+
+    // Absent in files written before the key existed; those sort by created_at.
+    let lastMessageAtString = try container.decodeIfPresent(String.self, forKey: .lastMessageAt)
+    if let lastMessageAtString {
+      guard let lastMessageAt = ISO8601Milliseconds.date(from: lastMessageAtString) else {
+        throw DecodingError.dataCorruptedError(
+          forKey: .lastMessageAt, in: container, debugDescription: "Invalid ISO-8601 timestamp")
+      }
+      self.lastMessageAt = lastMessageAt
+    }
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -62,6 +83,9 @@ extension Conversation: Codable {
     try container.encode(title, forKey: .title)
     try container.encode(ISO8601Milliseconds.string(from: createdAt), forKey: .createdAt)
     try container.encode(ISO8601Milliseconds.string(from: updatedAt), forKey: .updatedAt)
+    if let lastMessageAt {
+      try container.encode(ISO8601Milliseconds.string(from: lastMessageAt), forKey: .lastMessageAt)
+    }
     try container.encode(instructions, forKey: .instructions)
     try container.encode(messageCount, forKey: .messageCount)
   }

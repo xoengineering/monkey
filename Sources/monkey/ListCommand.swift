@@ -37,11 +37,13 @@ private struct ConversationJSON: Encodable {
   let title: String
   let messageCount: Int
   let updatedAt: String
+  let lastMessageAt: String?
 
   enum CodingKeys: String, CodingKey {
     case id, title
     case messageCount = "message_count"
     case updatedAt = "updated_at"
+    case lastMessageAt = "last_message_at"
   }
 
   init(_ conversation: Conversation) {
@@ -49,5 +51,6 @@ private struct ConversationJSON: Encodable {
     title = conversation.title
     messageCount = conversation.messageCount
     updatedAt = ISO8601Milliseconds.string(from: conversation.updatedAt)
+    lastMessageAt = conversation.lastMessageAt.map(ISO8601Milliseconds.string(from:))
   }
 }
