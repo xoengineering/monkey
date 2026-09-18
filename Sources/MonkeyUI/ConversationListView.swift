@@ -57,10 +57,14 @@ struct ConversationListView: View {
     HStack {
       VStack(alignment: .leading) {
         titleView(for: conversation)
+          // Same height whether it's the Text or the rename TextField, so
+          // entering rename mode doesn't grow the row and shift its neighbors.
+          .frame(height: titleHeight, alignment: .leading)
         Text("\(conversation.messageCount) messages")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
+      .padding(.vertical, 2)
       Spacer(minLength: 0)
       #if os(macOS)
         if hoveredID == conversation.id, renamingID != conversation.id {
@@ -129,6 +133,10 @@ struct ConversationListView: View {
       Text(conversation.title)
     }
   }
+
+  /// Tall enough for a plain-style body TextField (measured 3pt taller than
+  /// the Text it replaces).
+  private let titleHeight: CGFloat = 22
 
   private var selectedConversation: Conversation? {
     viewModel.conversations.first { $0.id == selection }
