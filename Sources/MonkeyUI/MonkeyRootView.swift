@@ -9,9 +9,6 @@ public struct MonkeyRootView: View {
   #if os(iOS)
     @State private var showingSettings = false
   #endif
-  #if os(macOS)
-    @Environment(\.openSettings) private var openSettings
-  #endif
 
   public init(environment: AppEnvironment, defaultInstructions: Binding<String>) {
     self.environment = environment
@@ -22,17 +19,15 @@ public struct MonkeyRootView: View {
     NavigationSplitView {
       ConversationListView(viewModel: environment.listViewModel, selection: $selection)
         .id(environment.generation)
-        .toolbar {
-          ToolbarItem(placement: .automatic) {
-            Button("Settings", systemImage: "gearshape") {
-              #if os(macOS)
-                openSettings()
-              #else
+        #if os(iOS)
+          .toolbar {
+            ToolbarItem(placement: .automatic) {
+              Button("Settings", systemImage: "gearshape") {
                 showingSettings = true
-              #endif
+              }
             }
           }
-        }
+        #endif
     } detail: {
       let selectedConversation = environment.listViewModel.conversations.first {
         $0.id == selection

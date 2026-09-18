@@ -14,7 +14,7 @@ struct GeneralSettingsView: View {
           .foregroundStyle(.secondary)
       }
     }
-    .padding()
-    .frame(minWidth: 420, minHeight: 320)
+    .formStyle(.grouped)
+    .frame(minWidth: 420, minHeight: 320, alignment: .top)
   }
 }

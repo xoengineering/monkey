@@ -36,7 +36,7 @@ struct ConversationListView: View {
       }
     }
     .toolbar {
-      ToolbarItem {
+      ToolbarItem(placement: .primaryAction) {
         Button("New Conversation", systemImage: "square.and.pencil") {
           Task {
             if let conversation = await viewModel.createConversation() {
@@ -57,6 +57,16 @@ struct ConversationListView: View {
       Button("Rename") {
         Task { await viewModel.rename(conversation, to: renameText) }
       }
+    }
+    .alert(
+      "Something Went Wrong",
+      isPresented: Binding(
+        get: { viewModel.errorMessage != nil },
+        set: { if !$0 { viewModel.errorMessage = nil } })
+    ) {
+      Button("OK") {}
+    } message: {
+      Text(viewModel.errorMessage ?? "")
     }
   }
 

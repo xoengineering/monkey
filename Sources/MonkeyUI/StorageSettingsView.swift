@@ -45,8 +45,8 @@ struct StorageSettingsView: View {
         #endif
       }
     }
-    .padding()
-    .frame(minWidth: 420, minHeight: 360)
+    .formStyle(.grouped)
+    .frame(minWidth: 420, minHeight: 360, alignment: .top)
   }
 
   private var storageLocationBinding: Binding<StorageLocation> {

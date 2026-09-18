@@ -13,7 +13,6 @@ struct AdvancedSettingsView: View {
         Text("Monkey is open source under the MIT License.")
           .font(.caption)
           .foregroundStyle(.secondary)
-        // Placeholder URL — point at the real GitHub repo before shipping (PLAN.md §9).
         Link("View LICENSE.md on GitHub", destination: licenseURL)
       }
 
@@ -32,12 +31,12 @@ struct AdvancedSettingsView: View {
         }
       #endif
     }
-    .padding()
-    .frame(minWidth: 420, minHeight: 320)
+    .formStyle(.grouped)
+    .frame(minWidth: 420, minHeight: 320, alignment: .top)
   }
 
   private var licenseURL: URL {
-    URL(string: "https://github.com/example/monkey/blob/main/LICENSE.md")!
+    URL(string: "https://github.com/xoengineering/monkey/blob/main/LICENSE.md")!
   }
 
   #if os(macOS)
