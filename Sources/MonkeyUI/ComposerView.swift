@@ -39,6 +39,11 @@ struct ComposerView: View {
     }
     .padding(8)
     .disabled(isSendingDisabled)
+    // The detail view is recreated per selected conversation (`.id(conversation.id)`),
+    // so this fires for a newly created conversation and for clicking a different
+    // one in the sidebar. `defaultFocus` alone won't do it: it only resolves initial
+    // focus and never takes focus away from a list that already has it.
+    .onAppear { isFocused = true }
   }
 
   private func send() {
