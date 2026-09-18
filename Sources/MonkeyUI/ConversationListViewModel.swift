@@ -25,7 +25,7 @@ public final class ConversationListViewModel {
   @discardableResult
   public func createConversation() async -> Conversation? {
     do {
-      let conversation = try await store.create(title: "Untitled")
+      let conversation = try await store.create(title: Conversation.untitledTitle)
       await refresh()
       return conversation
     } catch {

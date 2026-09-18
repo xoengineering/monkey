@@ -24,6 +24,35 @@ import Testing
     }
   }
 
+  @Test func titlesAnUntitledConversationFromItsFirstMessage() async throws {
+    let root = try makeTemporaryRoot()
+    let store = ConversationStore(rootURL: root)
+    let conversation = try await store.create(title: Conversation.untitledTitle)
+    let backend = FakeChatBackend(results: [.chunks(["Blue."]), .chunks(["Green."])])
+    let session = ModelSession(backend: backend, store: store, conversation: conversation)
+
+    try await session.send("What color is the sky on a clear summer afternoon")
+    let afterFirst = try await store.listConversations().first?.title
+    try await session.send("And at night?")
+    let afterSecond = try await store.listConversations().first?.title
+
+    #expect(afterFirst == "What color is the sky on…")
+    #expect(afterSecond == "What color is the sky on…")
+    #expect(await session.conversation.title == "What color is the sky on…")
+  }
+
+  @Test func leavesAUserChosenTitleAlone() async throws {
+    let root = try makeTemporaryRoot()
+    let store = ConversationStore(rootURL: root)
+    let conversation = try await store.create(title: "Sky questions")
+    let backend = FakeChatBackend(results: [.chunks(["Blue."])])
+    let session = ModelSession(backend: backend, store: store, conversation: conversation)
+
+    try await session.send("What color is the sky?")
+
+    #expect(try await store.listConversations().first?.title == "Sky questions")
+  }
+
   @Test func writesUserMessageThenStreamsAssistantReplyToCompletion() async throws {
     let root = try makeTemporaryRoot()
     let store = ConversationStore(rootURL: root)

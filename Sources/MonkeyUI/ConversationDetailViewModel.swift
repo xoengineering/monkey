@@ -6,7 +6,7 @@ import Observation
 @MainActor
 @Observable
 public final class ConversationDetailViewModel {
-  public let conversation: Conversation
+  public private(set) var conversation: Conversation
   public private(set) var messages: [Message] = []
   public private(set) var canLoadOlderMessages = true
   public private(set) var isLoadingOlder = false
@@ -105,6 +105,7 @@ public final class ConversationDetailViewModel {
       } catch {
         errorMessage = String(describing: error)
       }
+      conversation = await modelSession.conversation
       await refreshIndex()
     }
   }

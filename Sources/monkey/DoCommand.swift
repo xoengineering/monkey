@@ -37,8 +37,7 @@ struct DoCommand: AsyncParsableCommand {
     }
 
     let store = CLIEnvironment.makeStore()
-    let title = String(text.prefix(60)).trimmingCharacters(in: .whitespacesAndNewlines)
-    let conversation = try await store.create(title: title)
+    let conversation = try await store.create(title: ConversationTitle.derive(from: text))
     let session = ModelSession(backend: backend, store: store, conversation: conversation)
 
     let printer = StreamPrinter()

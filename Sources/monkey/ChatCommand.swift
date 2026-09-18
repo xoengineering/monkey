@@ -24,7 +24,7 @@ struct ChatCommand: AsyncParsableCommand {
       resolvedConversation = try await ConversationReferenceResolver.resolve(
         reference, in: store)
     } else {
-      resolvedConversation = try await store.create(title: "Untitled")
+      resolvedConversation = try await store.create(title: Conversation.untitledTitle)
     }
 
     let session = ModelSession(backend: backend, store: store, conversation: resolvedConversation)

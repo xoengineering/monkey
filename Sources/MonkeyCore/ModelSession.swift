@@ -12,7 +12,7 @@ public enum ModelSessionError: Error, Equatable {
 public actor ModelSession {
   private let backend: any ChatBackend
   private let store: ConversationStore
-  private let conversation: Conversation
+  public private(set) var conversation: Conversation
   private let streamThrottleInterval: TimeInterval
 
   private var history: [ChatTurn] = []
@@ -68,6 +68,14 @@ public actor ModelSession {
     }
 
     try await loadHistoryIfNeeded()
+
+    // A conversation stops being "Untitled" the moment it has content.
+    let isFirstMessage = try await store.messageIndex(for: conversation.id).isEmpty
+    if isFirstMessage, conversation.title == Conversation.untitledTitle {
+      conversation.title = ConversationTitle.derive(from: body)
+      conversation.updatedAt = Date()
+      try await store.update(conversation)
+    }
 
     let userMessage = makeMessage(role: .user, status: .complete, body: body)
     try await store.write(userMessage, in: conversation.id)
