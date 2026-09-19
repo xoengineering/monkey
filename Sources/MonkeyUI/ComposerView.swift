@@ -10,8 +10,8 @@ struct ComposerView: View {
   /// Upper bound from the parent, which knows the window's height and how
   /// much of it the message list must keep.
   var maximumHeight: CGFloat
-  @AppStorage(ComposerSettings.startingLinesKey)
-  private var startingLines = ComposerSettings.defaultStartingLines
+  @AppStorage(GeneralSettings.startingLinesKey)
+  private var startingLines = GeneralSettings.defaultStartingLines
   @FocusState private var isFocused: Bool
   @State private var lineHeight: CGFloat = 17
 

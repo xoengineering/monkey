@@ -2,8 +2,8 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
   @Binding var defaultInstructions: String
-  @AppStorage(ComposerSettings.startingLinesKey)
-  private var startingLines = ComposerSettings.defaultStartingLines
+  @AppStorage(GeneralSettings.startingLinesKey)
+  private var startingLines = GeneralSettings.defaultStartingLines
 
   var body: some View {
     Form {
@@ -19,7 +19,7 @@ struct GeneralSettingsView: View {
       Section("Message Field") {
         Stepper(
           "Starting Height: ^[\(startingLines) line](inflect: true)",
-          value: $startingLines, in: ComposerSettings.startingLinesRange)
+          value: $startingLines, in: GeneralSettings.startingLinesRange)
         Text(
           """
           Drag the border above the message field to resize it. \
