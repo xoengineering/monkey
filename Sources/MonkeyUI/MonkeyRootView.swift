@@ -12,6 +12,9 @@ public struct MonkeyRootView: View {
   /// when its detail view appears. Cleared once the selection moves on, so
   /// clicking back to it later behaves like any other sidebar click.
   @State private var newlyCreatedID: ConversationID?
+  /// Per window, so it survives switching conversations (the detail view is
+  /// recreated per selection) but starts fresh from Settings on relaunch.
+  @State private var composerHeight: CGFloat?
   #if os(iOS)
     @State private var showingSettings = false
   #endif
@@ -46,6 +49,7 @@ public struct MonkeyRootView: View {
           conversation: conversation, store: environment.store, backend: environment.backend,
           isSendingDisabled: environment.isMigrating,
           focusesComposerOnAppear: conversation.id == newlyCreatedID,
+          composerHeight: $composerHeight,
           onConversationUpdated: { Task { await environment.listViewModel.refresh() } }
         )
         .id(conversation.id)

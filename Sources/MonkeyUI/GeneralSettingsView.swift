@@ -2,6 +2,8 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
   @Binding var defaultInstructions: String
+  @AppStorage(ComposerSettings.startingLinesKey)
+  private var startingLines = ComposerSettings.defaultStartingLines
 
   var body: some View {
     Form {
@@ -12,6 +14,20 @@ struct GeneralSettingsView: View {
         Text("Used for new conversations. Each conversation can override this.")
           .font(.caption)
           .foregroundStyle(.secondary)
+      }
+
+      Section("Message Field") {
+        Stepper(
+          "Starting Height: ^[\(startingLines) line](inflect: true)",
+          value: $startingLines, in: ComposerSettings.startingLinesRange)
+        Text(
+          """
+          Drag the border above the message field to resize it. \
+          It never grows past the window, less room for the message list.
+          """
+        )
+        .font(.caption)
+        .foregroundStyle(.secondary)
       }
     }
     .formStyle(.grouped)
