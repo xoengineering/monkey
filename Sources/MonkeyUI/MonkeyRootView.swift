@@ -8,6 +8,10 @@ public struct MonkeyRootView: View {
   var environment: AppEnvironment
   @Binding var defaultInstructions: String
   @State private var selection: ConversationID?
+  /// The conversation just created here, whose composer should take focus
+  /// when its detail view appears. Cleared once the selection moves on, so
+  /// clicking back to it later behaves like any other sidebar click.
+  @State private var newlyCreatedID: ConversationID?
   #if os(iOS)
     @State private var showingSettings = false
   #endif
@@ -41,6 +45,7 @@ public struct MonkeyRootView: View {
         ConversationDetailView(
           conversation: conversation, store: environment.store, backend: environment.backend,
           isSendingDisabled: environment.isMigrating,
+          focusesComposerOnAppear: conversation.id == newlyCreatedID,
           onConversationUpdated: { Task { await environment.listViewModel.refresh() } }
         )
         .id(conversation.id)
@@ -54,6 +59,9 @@ public struct MonkeyRootView: View {
       \.conversationActions, ConversationActions(newConversation: createConversation)
     )
     .onChange(of: environment.generation) { selection = nil }
+    .onChange(of: selection) {
+      if selection != newlyCreatedID { newlyCreatedID = nil }
+    }
     #if os(iOS)
       .sheet(isPresented: $showingSettings) {
         SettingsTabsView(defaultInstructions: $defaultInstructions, environment: environment)
@@ -64,6 +72,7 @@ public struct MonkeyRootView: View {
   private func createConversation() {
     Task {
       if let conversation = await environment.listViewModel.createConversation() {
+        newlyCreatedID = conversation.id
         selection = conversation.id
       }
     }

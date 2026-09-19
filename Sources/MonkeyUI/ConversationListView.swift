@@ -79,16 +79,13 @@ struct ConversationListView: View {
     }
     .contentShape(Rectangle())
     // Clicking a row doesn't move keyboard focus off the composer on its own,
-    // so selection is handled here: a different row selects it (and the new
-    // detail view's composer takes focus itself); the already-selected row
-    // gives the list focus, so Return renames and ⌘⌫ deletes.
+    // so selection is handled here: select the row and keep focus in the
+    // list (blue selection), so ↑/↓ move, Return renames, and ⌘⌫ deletes.
+    // Only a brand-new conversation sends focus to the composer.
     .onTapGesture {
       guard renamingID != conversation.id else { return }
-      if selection == conversation.id {
-        listFocused = true
-      } else {
-        selection = conversation.id
-      }
+      selection = conversation.id
+      listFocused = true
     }
     .onHover { isHovering in
       if isHovering {

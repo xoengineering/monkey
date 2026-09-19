@@ -3,6 +3,7 @@ import SwiftUI
 struct ComposerView: View {
   var viewModel: ConversationDetailViewModel
   var isSendingDisabled = false
+  var focusesOnAppear = false
   @FocusState private var isFocused: Bool
 
   var body: some View {
@@ -40,10 +41,13 @@ struct ComposerView: View {
     .padding(8)
     .disabled(isSendingDisabled)
     // The detail view is recreated per selected conversation (`.id(conversation.id)`),
-    // so this fires for a newly created conversation and for clicking a different
-    // one in the sidebar. `defaultFocus` alone won't do it: it only resolves initial
-    // focus and never takes focus away from a list that already has it.
-    .onAppear { isFocused = true }
+    // so this fires on every selection change; the flag limits it to a just-created
+    // conversation, leaving sidebar clicks focused in the sidebar. `defaultFocus`
+    // alone won't do it: it only resolves initial focus and never takes focus away
+    // from a list that already has it.
+    .onAppear {
+      if focusesOnAppear { isFocused = true }
+    }
   }
 
   private func send() {

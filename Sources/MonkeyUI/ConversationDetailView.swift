@@ -5,10 +5,12 @@ import SwiftUI
 struct ConversationDetailView: View {
   @State private var viewModel: ConversationDetailViewModel
   var isSendingDisabled = false
+  var focusesComposerOnAppear = false
 
   init(
     conversation: Conversation, store: ConversationStore, backend: any ChatBackend,
     isSendingDisabled: Bool = false,
+    focusesComposerOnAppear: Bool = false,
     onConversationUpdated: (() -> Void)? = nil
   ) {
     _viewModel = State(
@@ -16,6 +18,7 @@ struct ConversationDetailView: View {
         conversation: conversation, store: store, backend: backend,
         onConversationUpdated: onConversationUpdated))
     self.isSendingDisabled = isSendingDisabled
+    self.focusesComposerOnAppear = focusesComposerOnAppear
   }
 
   var body: some View {
@@ -26,7 +29,9 @@ struct ConversationDetailView: View {
         VStack(spacing: 0) {
           MessageThreadView(viewModel: viewModel)
           Divider()
-          ComposerView(viewModel: viewModel, isSendingDisabled: isSendingDisabled)
+          ComposerView(
+            viewModel: viewModel, isSendingDisabled: isSendingDisabled,
+            focusesOnAppear: focusesComposerOnAppear)
         }
       }
     }
