@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct MonkeyApp: App {
   @State private var environment: AppEnvironment
-  @State private var defaultInstructions = ""
+  @AppStorage(GeneralSettings.defaultInstructionsKey) private var defaultInstructions = ""
 
   init() {
     #if os(macOS)
